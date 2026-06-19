@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digitalismes · visuales reactivos</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <canvas id="stage"></canvas>
+
+    <div id="ui">
+      <label class="file-btn">
+        <input type="file" id="file" accept="audio/*" hidden />
+        Cargar música
+      </label>
+      <button id="playpause" disabled>Play</button>
+      <span id="status">Carga un archivo de audio para empezar</span>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
