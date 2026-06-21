@@ -234,7 +234,7 @@ Digitalismes/
 ├── index.html
 ├── package.json
 └── src/
-    ├── main.js                 ← conecta las tres capas
+    ├── main.js                 ← conecta las tres capas + ciclo de escenas
     ├── style.css
     ├── sources/
     │   └── audioFile.js        ← fuente: archivo de música
@@ -243,7 +243,11 @@ Digitalismes/
     │   └── renderer.js         ← el bucle de render (Prog. 2)
     ├── scenes/
     │   ├── line.js             ← osciloscopio (forma de onda cruda)
-    │   └── wave.js             ← onda en medio inhomogéneo (visual principal)
+    │   ├── wave.js             ← onda en medio inhomogéneo
+    │   ├── explorer.js         ← matriz de diagnóstico (10 parámetros)
+    │   ├── albufera.js         ← atardecer Albufera de Valencia
+    │   ├── dones.js            ← les dones — bailarinas neón
+    │   └── ona.js              ← onda pura reactiva al pitch
     └── ui/
         └── controls.js         ← panel de parámetros en vivo
 ```
@@ -270,11 +274,142 @@ Digitalismes/
 
 ---
 
+---
+
+## Escenas implementadas
+
+El ciclo de escenas se navega con el botón de la barra superior. El orden actual es:
+
+**Onda → Explorador → Albufera → Les Dones → Ona → (vuelta al inicio)**
+
+---
+
+### Escena 1 — Onda en medio inhomogéneo (`wave.js`)
+
+La escena original del proyecto. Una línea que cruza la pantalla de lado a lado representando cómo viaja una onda en un medio cuyas propiedades cambian con la posición (ver sección de física al inicio del documento).
+
+**Prompt original:** *"Queremos que la onda tenga más picos pero que siga siendo sinusoidal. Ver mejor reflejados los beats y los bajos, y empezar a dibujar la melodía."*
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| Número de ciclos visibles | `bass` graves | más bajo = más ciclos en pantalla (onda más apretada) |
+| Factor de compresión del medio | `treble` agudos | más agudos = medio más inhomogéneo = onda más comprimida a la derecha |
+| Altura de la onda | `density` densidad espectral | mezcla densa = onda grande; instrumento solo = onda pequeña |
+| Posición vertical | `pitch` nota dominante (Hz) | la melodía mueve la onda arriba y abajo en escala logarítmica |
+| Color base | `pitch` semitono (0–11) | cada nota tiene su posición en la rueda HSL (30° por semitono) |
+| Pulso de amplitud | `beat` golpe detectado | la onda crece de golpe y decae en ~15 frames |
+| Grosor de línea | `volume` volumen | más fuerte = línea más gruesa |
+
+---
+
+### Escena 2 — Explorador (`explorer.js`)
+
+Matriz de diagnóstico con 10 celdas en cuadrícula 5×2. Cada celda muestra un único parámetro del sonido con su nombre, valor numérico y una forma visual diferente. Es la herramienta para entender qué está detectando el motor de señal antes de crear nuevas escenas.
+
+**Prompt original:** *"Quiero que los parámetros del sonido se descompongan en objetos que pueda identificar. Quiero ver la longitud de onda y la amplitud también representadas."*
+
+| Celda | Parámetro | Forma visual |
+|---|---|---|
+| Volumen | `volume` | círculo que crece hacia afuera |
+| Graves | `bass` | círculo relleno que se expande |
+| Medios | `mid` | cuadrado que crece |
+| Agudos | `treble` | triángulo que crece |
+| Brillo | `brightness` centroide espectral | rombo que cambia de color (grave=cálido, agudo=frío) |
+| Densidad | `density` | cuadrícula de 6×6 puntos que se llenan |
+| Beat | `beat` | flash violeta que explota y decae |
+| Longitud de onda (λ) | `pitch` | onda sinusoidal pequeña: los ciclos visibles representan λ = 343/pitch metros |
+| Amplitud | `volume` | onda sinusoidal de ciclos fijos cuya altura varía con el volumen |
+| Nota | `pitch` | nombre de nota (Do, Re#…) + frecuencia en Hz |
+
+---
+
+### Escena 3 — Albufera (`albufera.js`)
+
+Paisaje del atardecer en la Albufera de Valencia. Todos los objetos visuales son elementos naturales del entorno.
+
+**Prompt de creación:** *"Vale viendo la matriz ahora lo que quiero es generar una nueva pantalla. El fondo va a ir cambiando de color con el volumen, quiero que se base en los colores de atardecer de la Albufera de Valencia. Cada vez que haya un beat quiero que aparezca un pato volando. La densidad va a aparecer abajo y va a ser una línea negra que vaya subiendo y bajando según la densidad. La longitud de onda va a ser un sol y la amplitud va a reaccionar cambiando los aros o los rayos del sol. Además con graves, medios y agudos quiero ver una onda en el centro de la pantalla que tenga tres picos."*
+
+**Iteraciones posteriores:**
+- *"Los graves medios y agudos van a dejar de ser ondas. Quiero que los graves sean una forma de árbol, los agudos una palmera y los medios una flor."*
+- *"Las tres plantas del doble de su tamaño. Que la amplitud tenga color relleno hasta abajo en azul mar y que oscile con el brillo."*
+- *"Los patos no quiero que orbiten alrededor del sol. Quiero que se distribuyan en la pantalla."*
+- *"Los patos más grandes y con un tono dorado, como si el sol incidiera sobre ellos."*
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| **Fondo** — degradado vertical (noche → naranja → dorado) | `volume` volumen | mayor volumen = cielo más brillante y cálido; silencio = noche oscura |
+| **Agua** (franja inferior) | — | refleja los colores del cielo con transparencia |
+| **Relleno azul mar** | `volume` amplitud | sube desde el fondo según el volumen; el borde ondulante cambia de frecuencia con el brillo |
+| Frecuencia del borde del mar | `brightness` brillo espectral | sonido brillante = olas rápidas; sonido oscuro = ola lenta |
+| **Sol** — tamaño | `pitch` longitud de onda | nota grave (λ larga) = sol grande; nota aguda (λ corta) = sol pequeño |
+| **Rayos del sol** — longitud | `beat` golpe detectado | en cada beat los rayos estallan y se desvanecen suavemente |
+| **Árboles** (izquierda, ×4) | `bass` graves | altura y anchura de la copa crecen con la energía de los graves |
+| **Flores** (centro, ×3) | `mid` medios | tamaño de los pétalos y longitud del tallo crecen con los medios; rotan lentamente |
+| **Palmeras** (derecha, ×2) | `treble` agudos | altura del tronco y longitud de frondes crecen con los agudos; se balancean con el sonido |
+| **Línea de densidad** (negra, zona inferior) | `density` densidad espectral | sube cuando hay muchos instrumentos activos; baja en silencio o instrumento solo |
+| **Patos** (×12, distribuidos por el cielo) | `volume` amplitud | velocidad de aleteo y tamaño del ala crecen con la amplitud; color dorado más brillante según la proximidad al sol |
+
+**Detalle del color de los patos:** el tono ámbar de cada pato se calcula según su distancia horizontal al sol (posición 76% del ancho). Los más cercanos al sol reciben un tono dorado brillante y un destello en el lomo; los más lejanos son ámbar oscuro. Los patos siempre miran en la dirección de su vuelo (flip horizontal según dirección).
+
+---
+
+### Escena 4 — Les Dones (`dones.js`)
+
+Misma composición que Albufera (fondo de atardecer, agua, sol, patos dorados, línea de densidad, relleno azul mar), pero las plantas son reemplazadas por tres bailarinas en colores neón que reaccionan cada una a una banda de frecuencia.
+
+**Prompt de creación:** *"Quiero una nueva pantalla que sea la misma que Albufera, pero en lugar de tener plantas, quiero que graves sea una mujer, agudos sea otra mujer, y medios sea otra mujer. Quiero que bailen. No sé, moviendo los brazos, las piernas. Además, que cada una sea de un color y que sean colores flúor."*
+
+**Iteraciones posteriores:**
+- *"Que una tenga el pelo melenita, la otra pelo largo con flequillo, y la tercera pelo corto tipo Pixie."*
+- *"La silueta de las mujeres fuese algo más lineal, más fino, más de pincel y que no tenga relleno, para que se note más el movimiento del cuerpo."*
+- *"Las mujeres un poquito más realistas. La del pelo largo que no lo tenga tan largo, más a la altura de los hombros."*
+- *"Los patos nunca vuelan hacia atrás."* (corrección aplicada también en Albufera)
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| **Mujer izquierda** — magenta `#FF10F0` | `bass` graves | magnitud del movimiento (amplitud del baile, vuelo de falda) proporcional a los graves |
+| **Mujer centro** — lima `#CCFF00` | `mid` medios | magnitud del movimiento proporcional a los medios |
+| **Mujer derecha** — cian `#00F5FF` | `treble` agudos | magnitud del movimiento proporcional a los agudos; más rápida por naturaleza de los agudos |
+| Movimiento de cada mujer | energía de su banda | brazos suben, piernas se separan, cuerpo rebota y se balancea con la música; a más energía, más amplitud y velocidad |
+| Falda | energía de su banda | se abre con el movimiento (flare proporcional a la energía) |
+| Halo neón | energía de su banda | brillo difuminado detrás de la figura, más intenso con más energía |
+| Fondo, agua, sol, patos, densidad, mar azul | igual que Albufera | ídem |
+
+**Anatomía de las figuras (estilo trazo de pincel, sin relleno):**
+cuello, hombros curvos, escote en V, curva de busto, cinturón, falda con pliegues, brazos con codo marcado, piernas con rodilla, cabeza ovalada, ojos y boca.
+
+**Peinados:**
+- Izquierda (graves): **melenita bob** — contorno del corte hasta la mandíbula con 3 líneas de textura interior
+- Centro (medios): **pelo largo con flequillo** — 4 mechones hasta el hombro que se mueven, más flequillo recto
+- Derecha (agudos): **pixie corto** — casquete corto con 4 mechones en punta que se erizan con la energía de los agudos
+
+---
+
+### Escena 5 — Ona (`ona.js`)
+
+Onda pura sobre fondo negro. Toda la pantalla es un único gesto visual: la onda y el color del aire que la rodea.
+
+**Prompt de creación:** *"Vamos a crear una nueva pantalla con una nueva onda. Vamos a dejar un fondo que cambie de color según la longitud de onda y que cambie de transparencia según la amplitud. La onda se va a mover según graves, medios y agudos y va a cambiar de grosor según el volumen. Para el beat que aparezca un destello luminoso."*
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| **Fondo** — tono de color | `pitch` longitud de onda | nota grave (λ larga) → tonos cálidos (rojo/naranja, hue 0°); nota aguda (λ corta) → tonos fríos (azul/violeta, hue 260°); transición suave con la melodía |
+| **Fondo** — opacidad | `volume` amplitud | silencio = casi transparente (fondo negro); música fuerte = color vívido y denso |
+| **Onda** — componente lento y grande | `bass` graves | ondulación de baja frecuencia (2.2 ciclos en pantalla) con amplitud hasta el 32% de la altura |
+| **Onda** — componente medio | `mid` medios | ondulación media (7 ciclos) con amplitud hasta el 14% de la altura |
+| **Onda** — componente rápido y fino | `treble` agudos | rizado rápido (22 ciclos) con amplitud hasta el 6% de la altura |
+| **Onda** — grosor de línea | `volume` volumen | de 1.5px (silencio) a 13px (volumen máximo) |
+| **Onda** — color | `pitch` (derivado del hue del fondo) | mismo tono que el fondo pero más claro y saturado; 3 capas superpuestas (halo difuso, halo interior, línea nítida) |
+| **Destello de beat** | `beat` golpe detectado | gradiente radial blanco desde el centro que se expande y desvanece en ~15 frames; además la onda se vuelve blanca instantáneamente en el beat |
+
+La onda suma las tres componentes en una sola curva. En un momento de baja densidad (instrumento solo), la curva es limpia y sinusoidal. Con batería + bajo + melodía, la curva tiene forma compleja con múltiples frecuencias visibles simultáneamente.
+
+---
+
 ## Próximos pasos
 
-1. **Visualizar `mid`** — la energía en medios (voces, guitarras) es el único parámetro calculado sin efecto visual. Candidato natural: grosor de línea, dejando `volume` para la amortiguación.
-2. **Refactor `signal.bands`** — exponer un array universal de N bandas (0–1) para que fuentes sin espectro (MIDI) puedan rellenarlo con notas y las escenas no cambien.
-3. **Fuente: micrófono** — `sources/microphone.js`, misma interfaz que `audioFile.js`.
-4. **Fuente: MIDI** — `sources/midi.js`, usando Web MIDI API. Los knobs y la velocity mapean directamente al contrato de señal.
-5. **Fuente: cámara** — `sources/camera.js`, analizando brillo y movimiento de vídeo.
-6. **Escenas nuevas** — la diseñadora trabaja solo con `draw(ctx, signal, t)` sobre el contrato existente.
+1. **Fuente: micrófono** — `sources/microphone.js`, misma interfaz que `audioFile.js`.
+2. **Fuente: MIDI** — `sources/midi.js`, usando Web MIDI API. Los knobs y la velocity mapean directamente al contrato de señal.
+3. **Fuente: cámara** — `sources/camera.js`, analizando brillo y movimiento de vídeo.
+4. **Refactor `signal.bands`** — exponer un array universal de N bandas (0–1) para que fuentes sin espectro (MIDI) puedan rellenarlo con notas y las escenas no cambien.
+5. **Nuevas escenas** — la diseñadora trabaja solo con `draw(ctx, signal, t)` sobre el contrato existente.

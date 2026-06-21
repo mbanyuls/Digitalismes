@@ -16,7 +16,7 @@ html, body {
 #ui {
   position: fixed;
   left: 50%;
-  bottom: 80px;
+  top: 16px;
   transform: translateX(-50%);
   display: flex;
   align-items: center;

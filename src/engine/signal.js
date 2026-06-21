@@ -80,10 +80,10 @@ export function createSignal(analyser) {
       const density = active / n; // 0=silencio/solo instrumento, 1=mezcla densa
 
       // Beat: pico de graves por encima de la media reciente
-      bassAvg = bassAvg * 0.95 + bass * 0.05;
+      bassAvg = bassAvg * 0.92 + bass * 0.08;
       const now = performance.now();
       let beat = false;
-      if (bass > bassAvg * 1.4 && bass > 0.15 && now - lastBeat > 120) {
+      if (bass > bassAvg * 1.2 && bass > 0.05 && now - lastBeat > 100) {
         beat = true;
         lastBeat = now;
       }
