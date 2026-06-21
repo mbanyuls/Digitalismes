@@ -9,6 +9,7 @@ import { explorerScene } from "./scenes/explorer.js";
 import { albufScene } from "./scenes/albufera.js";
 import { donesScene } from "./scenes/dones.js";
 import { onaScene } from "./scenes/ona.js";
+import { ona2Scene } from "./scenes/ona2.js";
 import { mountControls } from "./ui/controls.js";
 
 mountControls();
@@ -19,7 +20,7 @@ const playBtn = document.getElementById("playpause");
 const sceneBtn = document.getElementById("scenebtn");
 const status = document.getElementById("status");
 
-const scenes = [waveScene, explorerScene, albufScene, donesScene, onaScene];
+const scenes = [waveScene, explorerScene, albufScene, donesScene, onaScene, ona2Scene];
 let sceneIndex = 0;
 let source = null;
 let renderer = null;
@@ -32,7 +33,8 @@ function switchScene() {
     "Explorador":                "→ Albufera",
     "Albufera":                  "→ Les Dones",
     "Les Dones":                 "→ Ona",
-    "Ona":                       "→ Onda",
+    "Ona":                       "→ Ona 2",
+    "Ona 2":                     "→ Onda",
   };
   sceneBtn.textContent = names[scenes[sceneIndex].name] || "→ Escena";
 }

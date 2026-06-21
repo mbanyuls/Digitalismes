@@ -280,7 +280,7 @@ Digitalismes/
 
 El ciclo de escenas se navega con el botón de la barra superior. El orden actual es:
 
-**Onda → Explorador → Albufera → Les Dones → Ona → (vuelta al inicio)**
+**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → (vuelta al inicio)**
 
 ---
 
@@ -403,6 +403,40 @@ Onda pura sobre fondo negro. Toda la pantalla es un único gesto visual: la onda
 | **Destello de beat** | `beat` golpe detectado | gradiente radial blanco desde el centro que se expande y desvanece en ~15 frames; además la onda se vuelve blanca instantáneamente en el beat |
 
 La onda suma las tres componentes en una sola curva. En un momento de baja densidad (instrumento solo), la curva es limpia y sinusoidal. Con batería + bajo + melodía, la curva tiene forma compleja con múltiples frecuencias visibles simultáneamente.
+
+---
+
+### Escena 6 — Ona 2 (`ona2.js`)
+
+Variante directa de Ona que resuelve un problema de percepción visual: en Ona la onda viaja lateralmente de forma continua, lo que hace que el patrón se vea repetido y en movimiento constante hacia un lado. Ona 2 congela ese viaje manteniendo exactamente la misma forma sinuosa.
+
+**Prompt de creación:** *"En Ona estoy viendo una onda muy sinuosa, unos picos muy sinuosos que se repiten en el tiempo y a lo que mi ojo ve son iguales conforme se van desplazando. Me gustaría coger ese trozo, justo ese bloque, y verlo en Ona 2, con esa longitud, pero sin que se desplace lateralmente."*
+
+**La diferencia técnica entre Ona y Ona 2:**
+
+En Ona, la fórmula de la onda incluye el tiempo como desfase:
+```
+y = bass · sin(x · frecuencia + t · velocidad)
+```
+El término `t · velocidad` hace que la curva se desplace un píxel a la derecha en cada frame — el ojo lo lee como un patrón viajando.
+
+En Ona 2, ese término se elimina:
+```
+y = bass · sin(x · frecuencia)
+```
+La forma de la onda queda anclada en pantalla. Lo único que cambia son las amplitudes (bass, mid, treble), así que la onda **respira** con la música en lugar de viajar.
+
+La onda se dibuja en el 60% central de la pantalla (de 20% a 80% del ancho). Fondo, grosor, color y destello de beat son idénticos a Ona.
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| **Fondo** — tono | `pitch` | ídem Ona: grave = rojo/naranja, agudo = azul/violeta |
+| **Fondo** — opacidad | `volume` amplitud | ídem Ona |
+| **Onda** — altura de la ondulación grande | `bass` graves | crece y encoge en amplitud; la curva respira pero no se mueve |
+| **Onda** — altura de la ondulación media | `mid` medios | ídem |
+| **Onda** — altura del rizado fino | `treble` agudos | ídem |
+| **Onda** — grosor | `volume` volumen | ídem Ona |
+| **Destello de beat** | `beat` | ídem Ona |
 
 ---
 
