@@ -247,7 +247,13 @@ Digitalismes/
     │   ├── explorer.js         ← matriz de diagnóstico (10 parámetros)
     │   ├── albufera.js         ← atardecer Albufera de Valencia
     │   ├── dones.js            ← les dones — bailarinas neón
-    │   └── ona.js              ← onda pura reactiva al pitch
+    │   ├── ona.js              ← onda pura reactiva al pitch
+    │   ├── ona2.js             ← onda anclada sin desplazamiento lateral
+    │   ├── atardecer.js        ← fotografía con ondas de luz superpuestas
+    │   └── mar.js              ← fotografía con agua animada por desplazamiento real
+    ├── public/
+    │   ├── atardecer.jpg       ← fotografía escena Atardecer
+    │   └── mar.jpg             ← fotografía escena Mar
     └── ui/
         └── controls.js         ← panel de parámetros en vivo
 ```
@@ -280,7 +286,9 @@ Digitalismes/
 
 El ciclo de escenas se navega con el botón de la barra superior. El orden actual es:
 
-**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → (vuelta al inicio)**
+**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → Atardecer → Mar → (vuelta al inicio)**
+
+La navegación se hace ahora con un **desplegable** en la barra superior (antes era un botón de avance uno a uno). Al seleccionar el nombre de la escena en el menú, se cambia directamente.
 
 ---
 
@@ -437,6 +445,54 @@ La onda se dibuja en el 60% central de la pantalla (de 20% a 80% del ancho). Fon
 | **Onda** — altura del rizado fino | `treble` agudos | ídem |
 | **Onda** — grosor | `volume` volumen | ídem Ona |
 | **Destello de beat** | `beat` | ídem Ona |
+
+---
+
+### Escena 7 — Atardecer (`atardecer.js`)
+
+Fotografía real de fondo con ondas de luz animadas superpuestas sobre la zona del mar. La foto tiene el mar detrás de rocas y un edificio en primer plano, por lo que no es posible aislar automáticamente los píxeles de agua — la solución actual (Opción A) superpone líneas luminosas sobre la región aproximada del mar.
+
+**Prompt de creación:** *"Crearía una nueva pantalla con una imagen de un atardecer. ¿Cómo podemos hacer para que esta imagen se mueva? ¿Puedes mover las olas del mar al ritmo de la música?"*
+
+**Opción A — activa:** ondas de luz semitransparentes dibujadas encima de la zona del mar (~40%–62% de la altura de la imagen). 6 líneas a distintas alturas, frecuencias y velocidades; paleta cálida (rosas/dorados) que recoge los tonos de la foto.
+
+**Opción C — preparada en el código, pendiente de activar:** cuando se disponga de una máscara (imagen en blanco y negro donde blanco = agua, negro = resto, creada en Photoshop/Procreate), se puede activar definiendo `MASK_SRC = "/atardecer-mask.png"` en el archivo. El código ya está estructurado para soportarla.
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| Líneas de luz sobre el mar | `bass` graves | amplitud (altura) de cada línea de ola |
+| Opacidad de las líneas | `volume` volumen | más fuerte = líneas más visibles |
+| Velocidad de viaje | `mid` medios | frecuencia y velocidad de las ondas individuales |
+| Destello sobre el mar | `beat` golpe | flash cálido dorado sobre la región del agua |
+
+---
+
+### Escena 8 — Mar (`mar.js`)
+
+Fotografía real con el agua animada mediante **desplazamiento de franjas** (*wave warp*): la imagen se divide en tiras horizontales de 3px y cada tira del agua se desplaza en dos dimensiones según una función de onda. El cielo queda completamente estático. El efecto visual es el del agua ondulando y moviéndose de forma convincente, similar al efecto "wave warp" de editores de vídeo.
+
+**Prompt de creación:** *"No quiero que me dibujes ondas en la zona de agua. Mi objetivo es que las olas del mar se muevan al ritmo de la música. El movimiento del agua va en diagonal de izquierda a derecha."*
+
+**Prompt de ajuste:** *"No quiero ver destellos con el beat, y me gustaría que se notase más el movimiento de las aguas. ¿Se mueven solo en horizontal? ¿No pueden ondear?"*
+
+**Técnica — desplazamiento 2D de franjas:**
+- La imagen se dibuja primero completa (sky estático)
+- Luego el 50% inferior (agua) se redibuja franja a franja (3px cada una)
+- Cada franja tiene dos desplazamientos independientes:
+  - **Horizontal** (`offsetX`): cada franja se mueve a izquierda/derecha → las crestas viajan hacia abajo → el ojo lo lee como movimiento diagonal izq→der, igual que olas reales
+  - **Vertical** (`offsetV`): se varía qué fila de la imagen fuente se lee → las filas se comprimen y estiran → el agua ondea arriba/abajo además de horizontalmente
+- Las franjas del primer plano (orilla) tienen más amplitud que las del horizonte (mar abierto más calmado)
+- La composición de tres frecuencias (como Ona) da movimiento orgánico y no repetitivo
+
+| Objeto visual | Parámetro | Comportamiento |
+|---|---|---|
+| Amplitud horizontal de las olas | `bass` graves | ola principal grande, hasta 34px de desplazamiento |
+| Frecuencia media del oleaje | `mid` medios | segunda capa de olas más frecuentes |
+| Rizado fino del agua | `treble` agudos | textura de superficie, olas pequeñas y rápidas |
+| Intensidad general | `volume` volumen | todas las amplitudes escalan con el volumen |
+| Beat | — | sin efecto visual (eliminado por petición) |
+
+**Opción C preparada:** igual que Atardecer, el código tiene la estructura para recibir una máscara (`MASK_SRC = "/mar-mask.png"`) que permitiría aplicar el desplazamiento solo a los píxeles exactos de agua, incluyendo reflexiones y zonas irregulares.
 
 ---
 

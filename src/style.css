@@ -30,7 +30,7 @@ html, body {
   z-index: 10;
 }
 
-.file-btn, #playpause {
+.file-btn, #playpause, #scenebtn {
   cursor: pointer;
   padding: 7px 16px;
   border: 1px solid #d0d0d0;
@@ -38,10 +38,20 @@ html, body {
   background: #fff;
   font-size: 13px;
   color: #111;
+  font-family: inherit;
 }
 
-.file-btn:hover, #playpause:hover:not(:disabled) { background: #f4f4f4; }
+.file-btn:hover, #playpause:hover:not(:disabled), #scenebtn:hover { background: #f4f4f4; }
 #playpause:disabled { opacity: 0.4; cursor: default; }
+
+#scenebtn {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23999' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
 
 #status { color: #777; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
