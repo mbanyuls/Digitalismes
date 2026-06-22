@@ -312,22 +312,31 @@ La escena original del proyecto. Una línea que cruza la pantalla de lado a lado
 
 ### Escena 2 — Explorador (`explorer.js`)
 
-Matriz de diagnóstico con 10 celdas en cuadrícula 5×2. Cada celda muestra un único parámetro del sonido con su nombre, valor numérico y una forma visual diferente. Es la herramienta para entender qué está detectando el motor de señal antes de crear nuevas escenas.
+Matriz de diagnóstico con 12 celdas en cuadrícula 4×3. Cada celda muestra un único parámetro del sonido con su nombre, valor numérico, una forma visual diferente y un **tooltip** (al pasar el ratón) que explica qué es ese parámetro y cómo lo percibe el oído humano.
 
 **Prompt original:** *"Quiero que los parámetros del sonido se descompongan en objetos que pueda identificar. Quiero ver la longitud de onda y la amplitud también representadas."*
 
-| Celda | Parámetro | Forma visual |
-|---|---|---|
-| Volumen | `volume` | círculo que crece hacia afuera |
-| Graves | `bass` | círculo relleno que se expande |
-| Medios | `mid` | cuadrado que crece |
-| Agudos | `treble` | triángulo que crece |
-| Brillo | `brightness` centroide espectral | rombo que cambia de color (grave=cálido, agudo=frío) |
-| Densidad | `density` | cuadrícula de 6×6 puntos que se llenan |
-| Beat | `beat` | flash violeta que explota y decae |
-| Longitud de onda (λ) | `pitch` | onda sinusoidal pequeña: los ciclos visibles representan λ = 343/pitch metros |
-| Amplitud | `volume` | onda sinusoidal de ciclos fijos cuya altura varía con el volumen |
-| Nota | `pitch` | nombre de nota (Do, Re#…) + frecuencia en Hz |
+**Iteraciones posteriores:**
+- *"¿Tiene sentido estar viendo amplitud y volumen como dos celdas separadas si son la misma variable?"* → debate sobre la diferencia entre amplitud física y percepción subjetiva
+- *"Prefiero ver la amplitud. Pon en el título 'Amplitud/Volumen'. Lo del Loudness me parece chuli. ¿Podrías poner un tooltip en cada celda que explique qué es y cómo lo percibe el humano? Y me parece interesante ver también la frecuencia en hercios."*
+
+**Sobre la relación Amplitud / Volumen:**
+Son el mismo dato medido con dos nombres. `signal.volume` es la amplitud RMS (raíz cuadrática media) de la señal — una medida física y objetiva. "Volumen" es la percepción subjetiva de esa energía. En el proyecto se usan indistintamente porque apuntan al mismo número. El **Loudness** es diferente: pondera las bandas de frecuencia según cómo las percibe el oído (`bass×0.2 + mid×0.5 + treble×0.3`), porque los medios suenan más fuertes que los graves a igual energía.
+
+| Celda | Parámetro | Forma visual | Tooltip |
+|---|---|---|---|
+| Loudness | `bass·0.2 + mid·0.5 + treble·0.3` | anillos concéntricos que se expanden | intensidad percibida por el oído, ponderada por sensibilidad auditiva |
+| Graves | `bass` | círculo relleno que se expande | 20–250 Hz; vibración física, bombo, bajo |
+| Medios | `mid` | cuadrado que crece | 250–4000 Hz; voces, melodías; zona de máxima sensibilidad del oído |
+| Agudos | `treble` | triángulo que crece | 4000–20000 Hz; platillos, brillos, aire |
+| Brillo | `brightness` centroide espectral | rombo que cambia de color | centro de gravedad del espectro; grave=oscuro, agudo=brillante |
+| Densidad | `density` | cuadrícula de 6×6 puntos que se llenan | cuántas frecuencias están activas a la vez |
+| Beat | `beat` | flash violeta que explota y decae | golpe detectado cuando graves supera 1.2× su media |
+| Longitud de onda (λ) | `pitch` | onda sinusoidal con ciclos proporcionales a λ | λ = 343/pitch metros; los ciclos visibles representan cuántos λ caben en pantalla |
+| Amplitud / Volumen | `volume` | onda sinusoidal cuya altura varía con la energía | amplitud RMS = medida física; volumen = percepción subjetiva de esa misma medida |
+| Nota | `pitch` | nombre de nota (Do, Re#…) + Hz | nota detectada por autocorrelación sobre la forma de onda cruda |
+| Frecuencia Hz | `pitch` | barra logarítmica 20 Hz–20 kHz con marcador | posición del sonido en el espectro audible; referencia: 440 Hz = La estándar |
+| Forma de onda | `wave` | mini osciloscopio con señal cruda | forma de la señal en el tiempo; sinusoidal pura = curva suave; acorde/ruido = forma irregular |
 
 ---
 
