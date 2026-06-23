@@ -244,18 +244,20 @@ Digitalismes/
     ├── scenes/
     │   ├── line.js             ← osciloscopio (forma de onda cruda)
     │   ├── wave.js             ← onda en medio inhomogéneo
-    │   ├── explorer.js         ← matriz de diagnóstico (10 parámetros)
+    │   ├── explorer.js         ← matriz de diagnóstico (12 parámetros + tooltips)
     │   ├── albufera.js         ← atardecer Albufera de Valencia
     │   ├── dones.js            ← les dones — bailarinas neón
     │   ├── ona.js              ← onda pura reactiva al pitch
     │   ├── ona2.js             ← onda anclada sin desplazamiento lateral
     │   ├── atardecer.js        ← fotografía con ondas de luz superpuestas
-    │   └── mar.js              ← fotografía con agua animada por desplazamiento real
+    │   ├── mar.js              ← fotografía con agua animada por desplazamiento real
+    │   └── crestes.js          ← cordillera espectral tipo Joy Division
     ├── public/
     │   ├── atardecer.jpg       ← fotografía escena Atardecer
     │   └── mar.jpg             ← fotografía escena Mar
     └── ui/
-        └── controls.js         ← panel de parámetros en vivo
+        ├── controls.js         ← panel de parámetros (solo escena Onda)
+        └── crestesControls.js  ← panel de parámetros (solo escena Crestes)
 ```
 
 ### Stack
@@ -286,9 +288,13 @@ Digitalismes/
 
 El ciclo de escenas se navega con el botón de la barra superior. El orden actual es:
 
-**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → Atardecer → Mar → (vuelta al inicio)**
+**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → Atardecer → Mar → Crestes → (vuelta al inicio)**
 
-La navegación se hace ahora con un **desplegable** en la barra superior (antes era un botón de avance uno a uno). Al seleccionar el nombre de la escena en el menú, se cambia directamente.
+La navegación se hace con un **desplegable** en la barra superior. Al seleccionar el nombre de la escena en el menú, se cambia directamente.
+
+**Sistema de paneles de control por escena:** el panel de parámetros (barra inferior) solo aparece en las escenas que lo necesitan. Actualmente hay dos paneles:
+- **Panel Onda** — solo visible en "Onda en medio inhomogéneo": suavizado, amplitud, arcoíris, movimiento de color, grosor, color de picos.
+- **Panel Crestes** — solo visible en "Crestes": velocitat, línies, alçada de pics, rang de freqüències.
 
 ---
 
@@ -502,6 +508,57 @@ Fotografía real con el agua animada mediante **desplazamiento de franjas** (*wa
 | Beat | — | sin efecto visual (eliminado por petición) |
 
 **Opción C preparada:** igual que Atardecer, el código tiene la estructura para recibir una máscara (`MASK_SRC = "/mar-mask.png"`) que permitiría aplicar el desplazamiento solo a los píxeles exactos de agua, incluyendo reflexiones y zonas irregulares.
+
+---
+
+### Escena 9 — Crestes (`crestes.js`)
+
+Visualización inspirada en la portada del álbum *Unknown Pleasures* de Joy Division (1979): líneas blancas apiladas sobre fondo negro que forman una cordillera animada en tiempo real con el espectro de frecuencias de la música.
+
+**Referencia visual:** *"Nueva idea. Te paso una imagen de referencia. Tenemos un fondo negro y líneas blancas representando la música. Estas líneas blancas dan la sensación visual de que se mueven hacia adelante. Yo entiendo que con la frecuencia y luego se van generando diferentes picos en la horizontal mostrando graves, medios y agudos de izquierda a derecha."*
+
+**Concepto técnico:**
+- Cada línea horizontal es una **fotografía del espectro de frecuencias** (FFT) en un instante concreto del tiempo.
+- El eje X representa frecuencia: **izquierda = graves (bass), centro = medios (mid), derecha = agudos (treble)**. La escala es logarítmica para dar más espacio visual a los graves, que es donde el oído percibe más detalle.
+- La altura de cada pico en una línea = energía de esa frecuencia en ese instante.
+- Se captura un nuevo frame del espectro y se añade a un buffer de historial. Cuando el buffer está lleno, el frame más antiguo se descarta.
+
+**Iteración 1 — dirección del movimiento:**
+*"Quiero que la primera señal se vea en la línea más alta de la pantalla. Quiero que salte la señal en la primera línea de arriba y que se vaya diluyendo poco a poco hacia abajo, como si desapareciera. Las líneas de la parte superior siempre van a tener los picos más fuertes, y luego se van a ir reduciendo hacia mí. Como si fuera un mar con el oleaje de fondo y yo estoy en la orilla."*
+
+→ La línea **nueva** aparece siempre **arriba** (en el horizonte, al 50% de la pantalla), con los picos más altos. A medida que envejece, baja hacia la orilla (la parte inferior) y sus picos se achatan hasta casi desaparecer. El 50% superior de la pantalla queda completamente negro.
+
+**Iteración 2 — layout y panel de control:**
+*"La última no quiero que esté en lo alto de la pantalla; quiero que empiece al 50% de la pantalla. Quiero también que el cuadro de mando solo se vea en la primera pantalla. Para esta nueva pantalla quiero un nuevo cuadro de mando con los parámetros que me puedan ayudar a modificar esta nueva."*
+
+→ Las líneas ocupan del 50% al 92% de la pantalla. Panel de control exclusivo para Crestes.
+
+**Técnica de renderizado — painter's algorithm con máscara negra:**
+1. Se dibuja cada línea de arriba hacia abajo (la nueva primero, la más vieja última).
+2. Cada línea se dibuja dos veces: primero se **rellena de negro** el área bajo los picos (oculta las líneas anteriores que quedan detrás), luego se **traza en blanco** solo la silueta de los picos.
+3. Esto crea el efecto de que cada línea "tapa" lo que tiene detrás, dando profundidad y la sensación de cordillera o mar.
+
+**Perspectiva:**
+- Las líneas de arriba (nuevas, horizonte) son ligeramente más estrechas y tienen picos grandes.
+- Las de abajo (viejas, orilla) son más anchas pero con picos casi planos.
+- La opacidad decrece de arriba (0.85) a abajo (0.15), reforzando el efecto de distancia.
+
+**Panel de control Crestes** (`src/ui/crestesControls.js`):
+
+| Parámetro | Rango | Efecto |
+|---|---|---|
+| **Velocitat** | 1–5 | Rapidez de desplazamiento (1=rápido, 5=lento). Controla cada cuántos frames se captura un nuevo espectro. |
+| **Línies** | 20–90 | Cuántas líneas se ven simultáneamente en pantalla. |
+| **Alçada pics** | 0.2–3.0 | Multiplicador de la altura de los picos. Más alto = montañas más dramáticas. |
+| **Rang freq.** | 0.1–0.9 | Fracción del espectro FFT que se muestra. 0.1 = solo graves; 0.9 = graves + medios + agudos hasta ~16kHz. |
+
+| Objeto visual | Parámetro de audio | Comportamiento |
+|---|---|---|
+| Altura de picos en zona izquierda | `bass` graves | picos altos a la izquierda cuando hay bajo/bombo |
+| Altura de picos en zona central | `mid` medios | picos en el centro con voces y melodías |
+| Altura de picos en zona derecha | `treble` agudos | picos a la derecha con platillos y brillos |
+| Velocidad de desplazamiento total | depende de `Velocitat` | controlable desde el panel |
+| Opacidad y altura | decrecen de arriba a abajo | efecto de oleaje que se desvanece en la orilla |
 
 ---
 
