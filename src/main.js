@@ -13,6 +13,7 @@ import { ona2Scene }             from "./scenes/ona2.js";
 import { atardecerScene }        from "./scenes/atardecer.js";
 import { marScene }              from "./scenes/mar.js";
 import { crestesScene }          from "./scenes/crestes.js";
+import { crestesColorScene }     from "./scenes/crestesColor.js";
 import { mountControls }         from "./ui/controls.js";
 import { mountCrestesControls }  from "./ui/crestesControls.js";
 
@@ -29,7 +30,7 @@ const ctrlCreste  = document.getElementById("controls-crestes");
 
 const scenes = [
   waveScene, explorerScene, albufScene, donesScene,
-  onaScene, ona2Scene, atardecerScene, marScene, crestesScene,
+  onaScene, ona2Scene, atardecerScene, marScene, crestesScene, crestesColorScene,
 ];
 
 let sceneIndex = 0;
@@ -39,7 +40,8 @@ let renderer   = null;
 // Mostrar el panel correcto según la escena activa
 function updateControls() {
   ctrlWave.style.display   = scenes[sceneIndex].name === "Onda en medio inhomogéneo" ? "flex" : "none";
-  ctrlCreste.style.display = scenes[sceneIndex].name === "Crestes"                   ? "flex" : "none";
+  const isCreste = scenes[sceneIndex].name === "Crestes" || scenes[sceneIndex].name === "Crestes Color";
+  ctrlCreste.style.display = isCreste ? "flex" : "none";
 }
 
 // Poblar el desplegable

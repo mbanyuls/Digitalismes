@@ -1,11 +1,12 @@
-// Panel de controles exclusivo para la escena Crestes.
-// Misma estructura que controls.js pero con parámetros propios.
+// Panel de controles exclusivo para las escenas Crestes y Crestes Color.
 
 export const crestesParams = {
-  speed:     2,    // frames entre capturas (1=más rápido, 5=más lento)
-  lines:     55,   // líneas en pantalla
-  amp:       1.0,  // multiplicador de altura de picos
-  freqRange: 0.60, // fracción del espectro visible (0.2=solo graves, 0.9=todo)
+  speed:     2,         // frames entre capturas (1=más rápido, 5=más lento)
+  lines:     55,        // líneas en pantalla
+  amp:       1.0,       // multiplicador de altura de picos
+  freqRange: 0.60,      // fracción del espectro visible (0.2=solo graves, 0.9=todo)
+  beamColor: "#ffffff", // color del haz de luz (Crestes Color)
+  bgColor:   "#000000", // color de fondo (Crestes Color)
 };
 
 const SLIDERS = [
@@ -29,6 +30,14 @@ export function mountCrestesControls() {
         <span class="ctrl-val" data-val="${s.key}">${crestesParams[s.key]}</span>
       </div>
     `).join("")}
+    <div class="ctrl-row">
+      <span class="ctrl-label">Color haz</span>
+      <input type="color" id="ctrl-beam-color" value="${crestesParams.beamColor}" />
+    </div>
+    <div class="ctrl-row">
+      <span class="ctrl-label">Fons</span>
+      <input type="color" id="ctrl-bg-color" value="${crestesParams.bgColor}" />
+    </div>
   `;
 
   document.body.appendChild(panel);
@@ -40,5 +49,13 @@ export function mountCrestesControls() {
       panel.querySelector(`[data-val="${key}"]`).textContent =
         parseFloat(input.value).toFixed(2);
     });
+  });
+
+  panel.querySelector("#ctrl-beam-color").addEventListener("input", (e) => {
+    crestesParams.beamColor = e.target.value;
+  });
+
+  panel.querySelector("#ctrl-bg-color").addEventListener("input", (e) => {
+    crestesParams.bgColor = e.target.value;
   });
 }

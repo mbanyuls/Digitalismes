@@ -251,7 +251,8 @@ Digitalismes/
     │   ├── ona2.js             ← onda anclada sin desplazamiento lateral
     │   ├── atardecer.js        ← fotografía con ondas de luz superpuestas
     │   ├── mar.js              ← fotografía con agua animada por desplazamiento real
-    │   └── crestes.js          ← cordillera espectral tipo Joy Division
+    │   ├── crestes.js          ← cordillera espectral tipo Joy Division
+    │   └── crestesColor.js     ← Crestes con paleta térmica y haz de luz
     ├── public/
     │   ├── atardecer.jpg       ← fotografía escena Atardecer
     │   └── mar.jpg             ← fotografía escena Mar
@@ -288,13 +289,13 @@ Digitalismes/
 
 El ciclo de escenas se navega con el botón de la barra superior. El orden actual es:
 
-**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → Atardecer → Mar → Crestes → (vuelta al inicio)**
+**Onda → Explorador → Albufera → Les Dones → Ona → Ona 2 → Atardecer → Mar → Crestes → Crestes Color → (vuelta al inicio)**
 
 La navegación se hace con un **desplegable** en la barra superior. Al seleccionar el nombre de la escena en el menú, se cambia directamente.
 
 **Sistema de paneles de control por escena:** el panel de parámetros (barra inferior) solo aparece en las escenas que lo necesitan. Actualmente hay dos paneles:
 - **Panel Onda** — solo visible en "Onda en medio inhomogéneo": suavizado, amplitud, arcoíris, movimiento de color, grosor, color de picos.
-- **Panel Crestes** — solo visible en "Crestes": velocitat, línies, alçada de pics, rang de freqüències.
+- **Panel Crestes** — visible en "Crestes" y "Crestes Color": velocitat, línies, alçada de pics, rang de freqüències, color del haz de luz y color de fondo.
 
 ---
 
@@ -559,6 +560,76 @@ Visualización inspirada en la portada del álbum *Unknown Pleasures* de Joy Div
 | Altura de picos en zona derecha | `treble` agudos | picos a la derecha con platillos y brillos |
 | Velocidad de desplazamiento total | depende de `Velocitat` | controlable desde el panel |
 | Opacidad y altura | decrecen de arriba a abajo | efecto de oleaje que se desvanece en la orilla |
+
+---
+
+### Escena 10 — Crestes Color (`crestesColor.js`)
+
+Variante directa de Crestes que añade dos capas sobre la misma base técnica: **color por amplitud en cada pico** y un **haz de luz física desde la esquina superior derecha**.
+
+**Prompt de creación:** *"Vamos a hacer una pantalla nueva, igualita que Crestes, pero vamos a incluir escalas de color según la amplitud."*
+
+**Paleta térmica de los picos:**
+La línea ya no es blanca — cada segmento de cada onda se colorea según la energía de esa frecuencia concreta en ese instante:
+
+| Amplitud del pico | Color |
+|---|---|
+| 0 (silencio) | Azul oscuro (hue 220°, luminosidad 12%) |
+| 0.5 (media) | Cian (hue 130°, luminosidad 51%) |
+| 1.0 (máximo) | Blanco/amarillo cálido (hue 40°, luminosidad 90%) |
+
+Para conseguir este efecto cada línea no se traza de golpe sino segmento a segmento (180 segmentos por línea), asignando a cada uno su propio `strokeStyle` en HSL.
+
+**Haz de luz desde la esquina superior derecha:**
+
+*"Quiero que salga un haz de luz desde arriba a la derecha que esté sacando el brillo de la melodía, y que incida sobre las ondas y genere luces y sombras."*
+
+El haz se compone de tres capas:
+1. **Penumbra** — cono amplio desde `(W, 0)` hasta el borde inferior izquierdo; opacidad baja.
+2. **Núcleo** — cono más estrecho y brillante que refuerza el eje del haz.
+3. **Destello de origen** — gradiente circular en la esquina donde "nace" la luz.
+
+La intensidad del haz está controlada por `signal.brightness` (el centroide espectral): notas agudas y densas = más luz; graves solos = haz tenue.
+
+**Iluminación física por segmento (luces y sombras):**
+
+Para cada uno de los 180 segmentos de cada línea se calcula la normal de superficie y se hace el producto escalar con la dirección hacia el foco de luz:
+
+```
+Normal de superficie:  n = normalize(dy, -dx)
+  → segmento plano:         n apunta hacia arriba
+  → flanco derecho del pico: n apunta hacia arriba-derecha (hacia el foco)
+  → flanco izquierdo:        n apunta hacia arriba-izquierda (de espaldas al foco)
+
+Factor de iluminación: dot(n, lightDir)
+  → flanco que mira al foco: lit alto → color cálido y brillante
+  → flanco de espaldas:      lit bajo → color frío y oscuro
+```
+
+El resultado es que cada pico tiene su lado derecho iluminado y su lado izquierdo en sombra, igual que un relieve físico bajo luz direccional.
+
+**Controles adicionales en el panel:**
+
+*"Añádeme al cuadro de mando un selector de color, porque quiero cambiar el fondo en el gradiente de blanco a negro con escala de grises."*
+*"Además de ese, quiero manejar el color de fondo de pantalla, el negro de detrás es el que quiero poder modificar."*
+
+| Parámetro | Tipo | Efecto |
+|---|---|---|
+| **Velocitat** | Slider 1–5 | ídem Crestes |
+| **Línies** | Slider 20–90 | ídem Crestes |
+| **Alçada pics** | Slider 0.2–3.0 | ídem Crestes |
+| **Rang freq.** | Slider 0.1–0.9 | ídem Crestes |
+| **Color haz** | Color picker | Tono del haz de luz; por defecto blanco; en gris oscuro el haz se apaga; acepta cualquier color |
+| **Fons** | Color picker | Color de fondo de pantalla; por defecto negro; también controla la máscara que separa las líneas entre sí, para que el efecto de profundidad se conserve sea cual sea el color elegido |
+
+El panel de Crestes Color tiene fondo oscuro semitransparente y texto blanco para ser visible sobre el fondo negro de la escena.
+
+| Objeto visual | Parámetro de audio | Comportamiento |
+|---|---|---|
+| Color de cada segmento de pico | amplitud local de esa frecuencia | azul oscuro → cian → blanco/amarillo según la energía |
+| Intensidad del haz de luz | `brightness` centroide espectral | agudos y densidad alta = más luz; graves solos = haz tenue |
+| Lado iluminado de cada pico | posición relativa al foco `(W, 0)` | flanco derecho de cada pico recibe la luz; flanco izquierdo queda en sombra |
+| Velocidad, líneas, altura, rango | parámetros del panel | ídem Crestes |
 
 ---
 

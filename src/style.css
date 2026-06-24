@@ -104,3 +104,41 @@ html, body {
   width: 28px;
   font-variant-numeric: tabular-nums;
 }
+
+#controls-crestes {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255,255,255,0.10);
+  padding: 10px 24px;
+  display: none;
+  align-items: center;
+  gap: 24px;
+  z-index: 10;
+  overflow-x: auto;
+}
+
+#controls-crestes .ctrl-title {
+  color: rgba(255,255,255,0.35);
+}
+
+#controls-crestes .ctrl-label {
+  color: rgba(255,255,255,0.60);
+}
+
+#controls-crestes .ctrl-val {
+  color: rgba(255,255,255,0.45);
+}
+
+#ctrl-beam-color, #ctrl-bg-color {
+  width: 32px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.20);
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
